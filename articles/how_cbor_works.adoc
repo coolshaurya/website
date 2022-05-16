@@ -1,0 +1,107 @@
+= A overview of CBOR
+:toc:
+
+== What is CBOR
+
+https://cbor.io[CBOR] is a binary data format that is inspired from
+https://msgpack.org[MessagePack] that aims to be easy and short to implement, have reasonably compact encoding,
+light on CPU usage, and be convertible to and from JSON. One advantage that CBOR has over JSON and other text-based data formats like TOML and CSV is that it is a binary data format rather than a text-based data format.
+
+The difference between binary and text-based data formats is that text-based data formats are encoded in plaintext which most text editors can process easily, while binary data formats are encoded in arbitrary sequences of bytes which cannot be opened easily in text editors. Usually, binary data formats have the advantage of being faster to encode and decode than text-based data formats, while simultaneously being more compact. However, the advantage text-based data formats have is that they are comparatively easier to read because any text editor can open them while binary data formats cannot be conveniently read by a human without custom tools footnote:[Note that being text-based doesn't guarantee human-readability. The data could be minified or simply be too large or too deeply nested for a human to make sense of.]. The choice between a binary data format and a text-based one generally boils down whether you want more machine-readability or more human-readability footnote:[Unless you're using YAML, which is terrible at both.].
+
+== The data item
+
+CBOR organizes data into _data items_. Each data item represents a single chunk of CBOR data. Data items can contain other data items nested inside them. Since CBOR is a binary data item, each data item is essentially some list of arbitrary bytes (and not Unicode text
+footnote:[Which https://en.wikipedia.org/wiki/Comparison_of_Unicode_encodings[can be encoded]
+in either UTF-16 (generally frowned upon, but still used in atleast Windows, Qt, JavaScript, Java, UEFI, and https://en.wikipedia.org/wiki/UTF-16#Usage[more].) or 
+UTF-8 (more common) or UTF-32 (very space-inefficent; somewhat rare).], which would be the case in a text-based data format).
+
+The first byte of a data item tells us two important things: its _major type_ and a _additional value_. The 3 most-significant bits make up the major type while the 5 least-significant bits make up the additional value. So, if the first byte is `0b01011010`, the major type will be `0b010` or decimal 2 and the additional value will be `0b11010` or decimal 26. This means that the major type is a number between 0 and 7 (both inclusive) while the additional value is a number between 0 and 31 (both inclusive).
+
+The major type affects the structure of the data type and it also tells us what the data type represents. The additional value isn't very useful on its own, it exists to load an _argument_. Depending on the additional value, the value of the argument can be the same as the value of the additional value, or it can be contained in the next 1, 2, 4 or, 8 bytes after the first byte or it may not exist at all:
+
+[cols="1,2"]
+[frame=none]
+|===
+|Value of additional value| Value of argument
+
+|Less than 24
+|Same as the value of the additional value
+
+|24
+|Value of the byte following the first byte, ie. the second byte
+
+|25
+|Value of the next 2 bytes following the first byte
+
+|26
+|Value of the next 4 bytes following the first byte
+
+|27
+|Value of the next 8 bytes following the first byte
+
+|28, 29 or 30
+|Reserved for future additions, currently invalid
+
+|31
+|No argument value exists.
+|===
+
+The major type and the argument are collectively called the _head_ of the data item. After the head, there may or may not be more bytes in data item that also come under the data type. No proper word/term is used to refer to these bytes in the CBOR spec, so in this article I use the term _content bytes_ to refer to the bytes that come after the head of a CBOR data item. A note about https://en.wikipedia.org/wiki/Endianness[endianness] before we proceed: Everything in CBOR is encoded in big-endian.
+
+That is a lot of information and new terminology to take in at once! I've put it all in the following table as a summary. Also, a note about https://en.wikipedia.org/wiki/Endianness[endianness] before we proceed: Everything in CBOR is encoded in big-endian.
+
+// Note: the cols statement is necessary for it to make the proper table
+[cols="2,2,3,4"]
+|===
+
+2+|First byte
+.2+|Next 0 to 8 bytes: *Argument* (the amount of bytes depend on the additional value)
+.3+|*Content bytes* (may or may not exist depending on the major type and argument)
+
+|Most significant 3 bits: *Major type*
+|Least significant 5 bits: *Additional value*
+
+3+|*Head*
+
+|===
+
+==  Integers
+
+Major type 0 and 1 encode integers. Major type 0 encodes a unsigned integer in the range 0 to 2^64^-1 (both inclusive). The value of the integer is the same as the value of the argument.
+
+Major type 1 encodes a negative integer in the range -2^64^ to -1 (both inclusive). The way this works is that the value of the integer is -1 minus the value of the argument. For example, if the argument is 0, the the value of the integer will be -1 - 0, which is -1. Similarily, if the argument is 42, then the value of the integer will be -1 - 42 which is -43.
+
+== Text strings and byte strings
+
+Major type 2 and 3 encode byte and text strings. Major type 2 encodes a byte string, aka. a list of bytes. In a data item with major type 2, the argument tells us the length of the string and the bytes themselves are the content bytes. For example, a byte string with length 70 will have major type 2 and argument 70 and following that it'll have 70 bytes making up the byte string.
+
+Major type 3 encodes text strings and is the same as major type 2 with the additional restriction that the bytes must be encoded in https://en.wikipedia.org/wiki/UTF-8[UTF-8].
+
+== Arrays
+
+Major type 4 encodes arrays, which are lists of CBOR data items. Here, the argument is the number of data items in the array, and the content bytes are the data items themselves, one directly after another.
+
+== Maps
+
+Major type 5 encodes maps, which consist of key-value pairs of data items. The argument is the number of _pairs_ in the map. The content bytes consist of a data items directly following each other such that the first item is the first key, the second item the first value, the third item is the second key, and so on.
+
+== Floating-point numbers
+
+Floating-point numbers are encoded in major type 7. When the argument is exactly 16, 32, or, 64 bits, then those bits are interpreted as a IEE 754 binary16 (aka. "half" or "f16"), binary32 (aka. "float" or "f32"), or, binary64 (aka. "double" or "f64") number respectively. A data item with major type 7 is only a float if its additional value is 25, 26, or, 27; this ensures that it has exactly 16, 32, or, 64 bits.
+
+== Indefinite length data items
+
+So far, we've ignored what happens when the additional value is 31. In major types 2, 3, 4, and, 5, the additional value of 31 means that the data item has indefinite length. In all other major types except 7, having an additional value of 31 is invalid.
+
+For lists, the way this works is that after the first byte, there may be zero or more number of data items. The end of the list is marked by the "break" stop code, which is encoded with major type 7 and additional information 31. The "break" stop code isn't considered a data item, it is merely a part of CBOR's syntax.
+
+Similarily, for maps, an additional value of 31 specifies an indefinite length map, and the first byte is followed by an even number of data items.
+
+Indefinite length strings (both byte and text) work a little differently, after the first byte, you can have any number of additional string data items that have definite length with the same major type and at the end, the "break" stop code. The final string is the concatenation of all substrings. Also note that while you can nest indefinite length arrays and maps, you cannot do the same with indefinite length strings.
+
+== Conclusion
+
+So, I hope that this article gave a decent overview of CBOR's syntax. One area that I haven't covered is the https://www.rfc-editor.org/rfc/rfc8949.html#section-3.3[extensiblity that CBOR offers] in the form of custom "simple values" or custom "tagged items".
+https://www.rfc-editor.org/rfc/rfc8949.html[The spec] covers this (and more!) in detail. I may cover these topics in a future article. That's it for this article, thanks for reading.
+
