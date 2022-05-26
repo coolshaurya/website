@@ -1,0 +1,13 @@
+<!doctype html>
+<html>
+    <head>
+    <title>{{ doctitle }}</title>
+    </head>
+    <body>
+        {{> header }}
+        <main>
+            {{{ content }}}
+        </main>
+        {{> footer }}
+    </body>
+</html>
