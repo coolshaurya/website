@@ -1,1 +1,6 @@
-HEADER
+<header>
+    <nav class="top-nav">
+        <a href="/"> Shaurya's blog </a>
+    </nav>
+    <h1>{{ doctitle }}</h1>
+</header>

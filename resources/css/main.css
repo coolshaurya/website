@@ -1,0 +1,119 @@
+body, html {
+    margin: 0;
+    padding: 0;
+}
+
+html {
+    font-size: 1.125rem;
+}
+
+:root {
+    --background: #FFFFC8;
+    --foreground: #1D2021;
+}
+
+body {
+    background-color: var(--background);
+    color: var(--foreground);
+
+    font-family: "Source Serif 4", serif;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+header, main, footer {
+    width: 70%;
+}
+
+nav.top-nav {
+    margin-top: 0.75rem;
+    border-bottom: 2px solid var(--foreground);
+    padding-bottom: 0.3rem;
+}
+
+nav.top-nav a {
+    color: #AF3A03;
+    font-size: 1.2rem;
+}
+nav.top-nav a:hover {
+    text-decoration: none;
+}
+
+nav.toc {
+    font-size: 0.9rem;
+}
+
+h1, h2, h3, h4 {
+    font-weight: 400;
+}
+
+.footnote-ref {
+    vertical-align: super;
+    font-size: 0.7rem;
+}
+
+section.footnotes {
+    margin-top: 2rem;
+    font-size: 0.9rem;
+}
+
+ol.footnotes {
+    margin-bottom: 0;
+}
+
+.footnotes hr {
+    display: none;
+}
+
+footer {
+    font-size: 0.75rem;
+    margin-bottom: 0.75rem;
+}
+
+table, td, th {
+    border: 1px solid var(--foreground);
+    border-collapse: collapse;
+}
+
+td, th {
+    padding: 0.5rem;
+}
+
+hr {
+    color: inherit;
+    margin: 1rem 0;
+}
+
+a:link {
+    text-decoration: none;
+}
+a:link:hover {
+    text-decoration: underline;
+}
+
+a:link {
+    color: #005F87;
+}
+a:visited {
+    color: #8F3F71;
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --foreground: #FFFFC8;
+        --background: #1D2021;
+    }
+
+    nav.top-nav a {
+        color: #F04F3C;
+    }
+
+    a:link {
+        color: #87AFAF;
+    }
+    a:visited {
+        color: #D787AF;
+    }
+}

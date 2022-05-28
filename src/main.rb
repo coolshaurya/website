@@ -1,4 +1,5 @@
 require 'bundler/inline'
+require 'fileutils'
 
 gemfile do
     source 'https://rubygems.org'
@@ -8,31 +9,41 @@ gemfile do
 end
 
 OUT_DIRECTORY = "./out"
+MUSTACHE_CONFIG = {
+    template_path: "./templates",
+    template_extension: "mst",
+}
+ASCIIDOCTOR_CONFIG = {
+    converter: Asciidoctor::Html5s::Converter,
+    standalone: false,
+}
 
-def pipeline(file_list, asciidoctor_config, mustache_config)
+def pipeline(file_list, asciidoctor_config, template_file)
     mustache_instance = Mustache.new
-    mustache_instance.template_file = mustache_config[:template_file]
-    mustache_instance.template_path = mustache_config[:template_path]
-    mustache_instance.template_extension = mustache_config[:template_extension]
+    mustache_instance.template_path = MUSTACHE_CONFIG[:template_path]
+    mustache_instance.template_extension = MUSTACHE_CONFIG[:template_extension]
+    mustache_instance.template_file = template_file
 
     file_list.map do |file_name|
         contents = File.read file_name
         document = Asciidoctor.load contents, asciidoctor_config
         mustache_attrs = document.attributes.merge({content: document.convert})
-        puts mustache_instance.render mustache_attrs
+        
+        final_output = mustache_instance.render mustache_attrs
         new_name = "#{OUT_DIRECTORY}/#{File.dirname file_name}/#{File.basename file_name, '.*'}.html"
+        FileUtils.mkdir_p File.dirname(new_name)
+        File.write new_name, final_output
     end
 end
 
-asciidoctor_config = {
-    converter: Asciidoctor::Html5s::Converter,
-    standalone: false,
-}
+FileUtils.mkdir_p OUT_DIRECTORY
+FileUtils.rm_r Dir.glob("#{OUT_DIRECTORY}/**")
+FileUtils.cp_r "./resources/", OUT_DIRECTORY
 
-mustache_config = {
-    template_path: "./templates",
-    template_extension: "mst",
-    template_file: "./templates/article.mst",
-}
+pipeline ["index.adoc"],
+ASCIIDOCTOR_CONFIG,
+"./templates/home.mst"
 
-pipeline Dir.glob("articles/**.adoc"), asciidoctor_config, mustache_config
+pipeline Dir.glob("articles/**.adoc"),
+ASCIIDOCTOR_CONFIG,
+"./templates/article.mst"
