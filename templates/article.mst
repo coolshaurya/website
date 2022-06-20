@@ -2,10 +2,13 @@
 <html>
     <head>
         {{> boilerplate }}
-        <title>{{ doctitle }}</title>
+        <title>{{ doctitle }} - Shaurya's blog</title>
     </head>
     <body>
-        {{> header }}
+        <header>
+            {{> nav }}
+            <h1> {{ doctitle }} </h1>
+        </header>
         <main>
             {{{ content }}}
         </main>

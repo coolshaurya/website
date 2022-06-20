@@ -3,6 +3,10 @@ body, html {
     padding: 0;
 }
 
+* {
+    box-sizing: border-box;
+}
+
 html {
     font-size: 1.125rem;
 }
@@ -24,7 +28,7 @@ body {
 }
 
 header, main, footer {
-    width: 70%;
+    width: min(40rem, 90%);
 }
 
 nav.top-nav {
@@ -45,8 +49,15 @@ nav.toc {
     font-size: 0.9rem;
 }
 
-h1, h2, h3, h4 {
+#toc-title {
+ margin-top: 0;
+}
+
+h2, h3, h4 {
     font-weight: 400;
+    font-style: italic;
+    margin-top: 1.5em;
+    margin-bottom: 0.5em;
 }
 
 .footnote-ref {
@@ -70,6 +81,10 @@ ol.footnotes {
 footer {
     font-size: 0.75rem;
     margin-bottom: 0.75rem;
+}
+
+.table-block, .literal-block, .listing-block {
+    overflow: scroll;
 }
 
 table, td, th {

@@ -1,13 +1,9 @@
-= Shaurya's blog
+= Shaurya's Blog
 
-This is my blog. I post stuff related to code that interests me here. 
+== About
+
+My name is Shaurya, and I'm a programmer proficient in Rust and HTML/CSS/JavaScript. On this site, I post articles about programming and technology. 
 
 == Articles
 
-[cols="1,3"]
-|===
-|Publication Date|Article
-
-|2021-01-16
-|link:articles/how_cbor_works.adoc[A overview of CBOR]
-|===
+* 2022-01-16: link:/articles/how_cbor_works.html[A overview of CBOR]
