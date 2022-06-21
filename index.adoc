@@ -4,6 +4,11 @@
 
 My name is Shaurya, and I'm a programmer proficient in Rust and HTML/CSS/JavaScript. On this site, I post articles about programming and technology. 
 
+== Contact
+
+My email is link:mailto:me@shauryashubham.com[me@+++<wbr>+++shaurya+++<wbr>+++shubham.com].
+I'm also on matrix at https://matrix.to/#/@coolshaurya:community.rs[@coolshaurya:+++<wbr>+++community.rs].
+
 == Articles
 
 * 2022-01-16: link:/articles/how_cbor_works.html[A overview of CBOR]
